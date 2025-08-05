@@ -1,7 +1,6 @@
 import socket
 import threading
-from datetime import datetime
-from chatbot import handle_llm_request  # Import real LLM function
+from chatroom import ChatRoomManager
 
 HOST = '127.0.0.1'
 PORT = 12345
@@ -9,91 +8,63 @@ PORT = 12345
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
 server.listen()
-print(f"[STARTED] Server is listening on {HOST}:{PORT}\n")
 
-clients = {}  # socket -> username
-chatrooms = {}  # room_name -> set of sockets
-client_rooms = {}  # socket -> room_name
+chatrooms = ChatRoomManager()
+clients = []
 
-lock = threading.Lock()
+print(f"[STARTED] Server listening on {HOST}:{PORT}")
 
-def broadcast(message, room, sender_socket=None):
-    with lock:
-        for client in chatrooms.get(room, []):
-            if client != sender_socket:
-                try:
-                    client.send(message.encode('utf-8'))
-                except:
-                    pass
-
-def handle_client(client_socket):
-    username = client_socket.recv(1024).decode('utf-8')
-    clients[client_socket] = username
-    client_socket.send("Welcome! Use commands like JOIN #room1, LEAVE, SWITCH #room2".encode('utf-8'))
+def handle_client(client_socket, address):
+    print(f"[NEW CONNECTION] {address} connected.")
+    client_socket.send(
+        "Welcome to the chat server!\n"
+        "Use /join <room>, /leave, /list, or just type to chat.\n".encode()
+    )
 
     while True:
         try:
-            msg = client_socket.recv(1024).decode('utf-8')
-            if not msg:
+            message = client_socket.recv(1024).decode().strip()
+            if not message:
                 break
 
-            timestamp = datetime.now().strftime("%H:%M:%S")
+            if message.startswith("/join"):
+                parts = message.split()
+                if len(parts) == 2:
+                    room_name = parts[1]
+                    chatrooms.join_room(client_socket, room_name)
+                    client_socket.send(f"Joined room '{room_name}'\n".encode())
+                else:
+                    client_socket.send("Usage: /join <room_name>\n".encode())
 
-            if msg.startswith("JOIN "):
-                room = msg.split()[1]
-                with lock:
-                    chatrooms.setdefault(room, set()).add(client_socket)
-                    client_rooms[client_socket] = room
-                client_socket.send(f"[Joined {room}]".encode('utf-8'))
+            elif message.startswith("/leave"):
+                chatrooms.leave_room(client_socket)
+                client_socket.send("Left the chatroom.\n".encode())
 
-            elif msg.startswith("SWITCH "):
-                room = msg.split()[1]
-                with lock:
-                    prev_room = client_rooms.get(client_socket)
-                    if prev_room and client_socket in chatrooms.get(prev_room, set()):
-                        chatrooms[prev_room].remove(client_socket)
-                    chatrooms.setdefault(room, set()).add(client_socket)
-                    client_rooms[client_socket] = room
-                client_socket.send(f"[Switched to {room}]".encode('utf-8'))
+            elif message.startswith("/list"):
+                rooms = chatrooms.list_rooms()
+                if rooms:
+                    client_socket.send(f"Available rooms: {', '.join(rooms)}\n".encode())
+                else:
+                    client_socket.send("No active chatrooms.\n".encode())
 
-            elif msg == "LEAVE":
-                with lock:
-                    room = client_rooms.pop(client_socket, None)
-                    if room:
-                        chatrooms[room].remove(client_socket)
-                        client_socket.send(f"[Left {room}]".encode('utf-8'))
-
-            elif msg.startswith("/ask"):
-                prompt = msg[len("/ask"):].strip()
-                response = handle_llm_request(prompt)
-                client_socket.send(response.encode('utf-8'))
-
-            elif msg == "exit":
+            elif message.startswith("/quit"):
                 break
 
             else:
-                room = client_rooms.get(client_socket)
-                if room:
-                    message = f"[{timestamp}] {username}: {msg}"
-                    broadcast(message, room, sender_socket=client_socket)
+                chatrooms.broadcast(client_socket, f"{address}: {message}")
 
         except ConnectionResetError:
             break
 
-    with lock:
-        room = client_rooms.pop(client_socket, None)
-        if room and client_socket in chatrooms.get(room, set()):
-            chatrooms[room].remove(client_socket)
-        clients.pop(client_socket, None)
-        client_socket.close()
-        print(f"[DISCONNECTED] {username} left the chat.")
+    print(f"[DISCONNECTED] {address} disconnected.")
+    chatrooms.leave_room(client_socket)
+    client_socket.close()
 
-
-def accept_connections():
+def receive_connections():
     while True:
         client_socket, addr = server.accept()
-        print(f"[CONNECTED] {addr} connected.")
-        thread = threading.Thread(target=handle_client, args=(client_socket,))
+        clients.append(client_socket)
+        thread = threading.Thread(target=handle_client, args=(client_socket, addr))
         thread.start()
 
-accept_connections()
+receive_connections()
