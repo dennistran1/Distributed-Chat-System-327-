@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 import statistics
+import csv
 
 HOST = '127.0.0.1'
 PORT = 12345
@@ -23,7 +24,6 @@ def client_simulation(client_id):
             msg = f"Message {i} from SimClient{client_id}"
             start_time = time.time()
             sock.send(msg.encode('utf-8'))
-            # Optionally wait for response from another client (not expected here)
             time.sleep(0.1)
             latency = (time.time() - start_time) * 1000  # ms
             latencies.append(latency)
@@ -48,6 +48,13 @@ def run_simulation():
     print(f"Average latency: {statistics.mean(latencies):.2f} ms")
     print(f"Max latency: {max(latencies):.2f} ms")
     print(f"Min latency: {min(latencies):.2f} ms")
+
+    # Save latencies to CSV
+    with open("latency_data.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["message_index", "latency_ms"])
+        for i, latency in enumerate(latencies):
+            writer.writerow([i, latency])
 
 if __name__ == '__main__':
     run_simulation()
