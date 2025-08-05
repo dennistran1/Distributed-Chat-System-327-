@@ -1,11 +1,7 @@
 import socket
 import threading
 from datetime import datetime
-
-# Optional: Placeholder for future chatbot integration (LLM)
-# NEW
-from chatbot import handle_llm_request
-
+from chatbot import handle_llm_request  # Import real LLM function
 
 HOST = '127.0.0.1'
 PORT = 12345
@@ -69,7 +65,7 @@ def handle_client(client_socket):
 
             elif msg.startswith("/ask"):
                 prompt = msg[len("/ask"):].strip()
-                response = handle_llm_request(prompt)  # Placeholder
+                response = handle_llm_request(prompt)
                 client_socket.send(response.encode('utf-8'))
 
             elif msg == "exit":
