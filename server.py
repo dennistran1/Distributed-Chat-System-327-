@@ -3,8 +3,9 @@ import threading
 from datetime import datetime
 
 # Optional: Placeholder for future chatbot integration (LLM)
-def handle_llm_request(prompt):
-    return f"[LLM Response to: '{prompt}']"  # Replace with actual API call later
+# NEW
+from chatbot import handle_llm_request
+
 
 HOST = '127.0.0.1'
 PORT = 12345
