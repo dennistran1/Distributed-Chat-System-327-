@@ -1,30 +1,52 @@
-import openai
-import os
-from dotenv import load_dotenv
+import socket
+import threading
+import time
 
-# Load API key from .env file or environment variable
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Simple keyword-based offline bot
+REPLIES = {
+    "hello": "Hi there! 👋",
+    "how are you": "I'm just a bot, but I'm doing well!",
+    "bye": "Goodbye! Have a great day!",
+    "who are you": "I'm your friendly offline chatbot.",
+    "thanks": "You're welcome!"
+}
 
-def handle_llm_request(prompt):
-    if not openai.api_key:
-        return "[LLM Error] OpenAI API key not found."
+HOST = '127.0.0.1'
+PORT = 12345
+ROOM = 'testroom'
 
+def get_reply(message):
+    message = message.lower()
+    for keyword in REPLIES:
+        if keyword in message:
+            return REPLIES[keyword]
+    return "I'm not sure how to respond to that."
+
+def main():
+    bot = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant for distributed systems."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        reply = response["choices"][0]["message"]["content"]
-        return f"[LLM Bot]: {reply}"
+        bot.connect((HOST, PORT))
+        print("[ChatBot] Connected to server.")
+        time.sleep(1)
+        bot.send(f"/join {ROOM}".encode())
+        print(f"[ChatBot] Joined room '{ROOM}'.")
+
+        while True:
+            try:
+                msg = bot.recv(1024).decode().strip()
+                print(f"[ChatBot] Received: {msg}")
+                if any(kw in msg.lower() for kw in REPLIES.keys()):
+                    reply = get_reply(msg)
+                    time.sleep(1)
+                    bot.send(reply.encode())
+            except:
+                break
 
     except Exception as e:
-        return f"[LLM Error] {str(e)}"
+        print(f"[ChatBot Error] {e}")
+    finally:
+        bot.close()
 
-# Example usage
-if __name__ == '__main__':
-    question = input("Ask the LLM: ")
-    print(handle_llm_request(question))
+if __name__ == "__main__":
+    main()
+
