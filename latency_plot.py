@@ -1,22 +1,17 @@
-import csv
+
 import matplotlib.pyplot as plt
 
-# Load latency data from CSV
-latencies = []
-with open('latency_data.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile)
-    next(reader)  # Skip header
-    for row in reader:
-        latencies.append(float(row[1]))
+# Read latencies from the .txt file
+with open('latency_data.txt') as f:
+    latencies = [float(line.strip()) for line in f if line.strip()]
 
-# Plot latency distribution
+# Plot the latency data
 plt.figure(figsize=(10, 5))
-plt.plot(latencies, marker='o', linestyle='-', label='Latency per Message')
-plt.xlabel('Message Index')
-plt.ylabel('Latency (ms)')
-plt.title('Message Latency Over Time')
+plt.plot(latencies, marker='o', linestyle='-', color='blue')
+plt.title("Simulated Client Message Latency")
+plt.xlabel("Message Number")
+plt.ylabel("Latency (ms)")
 plt.grid(True)
-plt.legend()
 plt.tight_layout()
-plt.savefig('performance_graphs/latency_plot.png')
-plt.show()
+plt.savefig("latency_plot.png")
+print("[Plot saved as latency_plot.png]")
