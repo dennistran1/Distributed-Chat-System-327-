@@ -1,14 +1,24 @@
+
 import socket
 import threading
 import time
 
-# Simple keyword-based offline bot
+# Extended keyword-based offline bot
 REPLIES = {
     "hello": "Hi there! 👋",
     "how are you": "I'm just a bot, but I'm doing well!",
     "bye": "Goodbye! Have a great day!",
     "who are you": "I'm your friendly offline chatbot.",
-    "thanks": "You're welcome!"
+    "thanks": "You're welcome!",
+    "joke": "Why did the programmer quit his job? Because he didn't get arrays.",
+    "help": "Try asking me about the weather, a joke, or how I am!",
+    "weather": "It's always sunny in the terminal. ☀️",
+    "study tip": "Break your work into small chunks and take regular breaks!",
+    "exam": "Good luck! Remember to breathe and stay focused.",
+    "chatroom": "Chatrooms help separate conversations into isolated spaces.",
+    "project": "Sounds like you're building something awesome!",
+    "python": "Python is a powerful language for distributed systems.",
+    "bot": "Yes, I'm a bot! And proud of it."
 }
 
 HOST = '127.0.0.1'
@@ -49,4 +59,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
