@@ -1,34 +1,33 @@
+
 import socket
 import threading
 import time
-import statistics
-import csv
 
 HOST = '127.0.0.1'
 PORT = 12345
 NUM_CLIENTS = 5
 NUM_MESSAGES = 10
-
 latencies = []
 
 def client_simulation(client_id):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((HOST, PORT))
-        sock.send(f"SimClient{client_id}".encode('utf-8'))
         sock.recv(1024)  # Welcome message
-        sock.send(b"JOIN #test")
+
+        # Join chatroom using valid command
+        sock.send(b"/join testroom")
         sock.recv(1024)
 
         for i in range(NUM_MESSAGES):
             msg = f"Message {i} from SimClient{client_id}"
             start_time = time.time()
-            sock.send(msg.encode('utf-8'))
-            time.sleep(0.1)
-            latency = (time.time() - start_time) * 1000  # ms
+            sock.send(msg.encode())
+            time.sleep(0.1)  # simulate message delay
+            latency = (time.time() - start_time) * 1000  # in ms
             latencies.append(latency)
 
-        sock.send(b"exit")
+        sock.send(b"/quit")
         sock.close()
     except Exception as e:
         print(f"[Client {client_id} Error] {e}")
@@ -37,24 +36,20 @@ def run_simulation():
     threads = []
     for i in range(NUM_CLIENTS):
         thread = threading.Thread(target=client_simulation, args=(i,))
-        threads.append(thread)
         thread.start()
+        threads.append(thread)
 
-    for thread in threads:
-        thread.join()
+    for t in threads:
+        t.join()
 
-    print("\n--- Simulation Complete ---")
-    print(f"Total messages sent: {NUM_CLIENTS * NUM_MESSAGES}")
-    print(f"Average latency: {statistics.mean(latencies):.2f} ms")
-    print(f"Max latency: {max(latencies):.2f} ms")
-    print(f"Min latency: {min(latencies):.2f} ms")
+    # Write latency results to a file
+    with open("latency_data.txt", "w") as f:
+        for latency in latencies:
+            f.write(f"{latency}\n")
 
-    # Save latencies to CSV
-    with open("latency_data.csv", "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["message_index", "latency_ms"])
-        for i, latency in enumerate(latencies):
-            writer.writerow([i, latency])
+    print(f"[Simulation Complete] {len(latencies)} messages sent.")
+    print("[Data written to latency_data.txt]")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_simulation()
+
