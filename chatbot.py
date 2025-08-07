@@ -1,23 +1,22 @@
-
 import socket
 import threading
 import time
 import openai
-import os
 
 # ==== CONFIGURATION ====
 HOST = '127.0.0.1'
 PORT = 12345
 ROOM = 'testroom'
+USERNAME = 'chatbot'
 
 # ==== OpenRouter Setup ====
-openai.api_key = "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"
+openai.api_key = "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"
 openai.api_base = "https://openrouter.ai/api/v1"
 
 def ask_llm(prompt):
     try:
         response = openai.ChatCompletion.create(
-            model="openai/gpt-3.5-turbo",  # You can also try "anthropic/claude-3-haiku"
+            model="openai/gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}]
         )
         return response.choices[0].message.content.strip()
@@ -30,18 +29,31 @@ def main():
         bot.connect((HOST, PORT))
         print("[ChatBot] Connected to server.")
         time.sleep(1)
-        bot.send(f"/join {ROOM}".encode())
-        print(f"[ChatBot] Joined room '{ROOM}'.")
+
+        # Auto register (just in case)
+        bot.sendall(f"/register {USERNAME}\n".encode())
+        time.sleep(1)
+
+        # Login
+        bot.sendall(f"/login {USERNAME}\n".encode())
+        time.sleep(1)
+
+        # Join room
+        bot.sendall(f"/join {ROOM}\n".encode())
+        print(f"[ChatBot] Logged in and joined room '{ROOM}'.")
 
         while True:
             try:
                 msg = bot.recv(1024).decode().strip()
                 print(f"[ChatBot] Received: {msg}")
 
-                if msg:
-                    time.sleep(1)
-                    reply = ask_llm(msg)
-                    bot.send(reply.encode())
+                # Ignore server errors to avoid bot loops
+                if msg.startswith("❌") or msg.startswith("⚠️") or not msg:
+                    continue
+
+                reply = ask_llm(msg)
+                time.sleep(1)
+                bot.sendall(reply.encode())
 
             except Exception as e:
                 print(f"[ChatBot Error] {e}")
