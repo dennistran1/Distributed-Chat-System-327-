@@ -1,76 +1,96 @@
-# Distributed-Chat-System-327-
 
-Overview
+# Distributed Multi-Chatroom Messaging System (CECS 327 Final Project)
 
-This is a basic distributed chat system written in Python. It allows multiple clients to connect to a central server, join chatrooms, exchange messages, and optionally query an AI assistant using /ask. The system demonstrates key distributed systems concepts including message passing, concurrency (via threading), and basic performance measurement.
+This is a distributed messaging system built in Python using sockets and threading. It supports multiple clients, chatrooms, a chatbot powered by OpenRouter (GPT-3.5), and includes performance analysis with latency visualization.
 
-Features
+---
 
-Multi-client chat via TCP sockets
+## 🔧 Features
 
-Multi-chatroom support (JOIN, SWITCH, LEAVE)
+- 🧠 **Multi-client, multi-threaded server** using TCP sockets
+- 💬 **Multiple chatrooms** with command support:
+  - `/join <room>` — join or create a chatroom
+  - `/leave` — leave current room
+  - `/list` — show all active chatrooms
+  - `/quit` — disconnect
+- 🤖 **Chatbot (AI-enhanced)** that responds intelligently using the OpenRouter API (GPT-3.5)
+- 📊 **Performance testing** with `testsimulation.py` simulating client load
+- 📈 **Latency plot** generated with `latency_plot.py` (outputs `latency_plot.png`)
+- 🧪 **Latency data file**: `latency_data.txt`
 
-Message broadcasting within chatrooms
+---
 
-Optional AI assistant command: /ask <question>
+## 📁 File Structure
 
-Message timestamps for latency analysis
+```
+DistributedChat327/
+│
+├── server.py              # Multi-threaded server
+├── client.py              # User-facing chat client
+├── chatroom.py            # Chatroom management logic
+├── chatbot.py             # Chatbot using OpenRouter API
+├── testsimulation.py      # Simulates multiple clients and records latency
+├── latency_plot.py        # Plots latency data into latency_plot.png
+├── latency_data.txt       # Raw latency results from simulation
+├── latency_plot.png       # Visualized latency graph
+└── README.md              # You're here
+```
 
-Setup Instructions
+---
 
-Requirements
+## 🚀 How to Run
 
-Python 3.10+
+### Terminal Tab 1: Start Server
+```bash
+python3 server.py
+```
 
-(Optional) openai and python-dotenv if integrating LLM chatbot
+### Terminal Tab 2: Client 1
+```bash
+python3 client.py
+/join testroom
+hello
+```
 
-Install Dependencies (optional for LLM)
+### Terminal Tab 3: Client 2
+```bash
+python3 client.py
+/join testroom
+how are you?
+```
 
-pip install openai python-dotenv
+### Terminal Tab 4: Chatbot (AI-Powered)
+```bash
+python3 chatbot.py
+```
 
-File Structure
+- Make sure you insert your OpenRouter API key in `chatbot.py`:
+```python
+openai.api_key = "sk-or-XXXXXXXXXXXXXXXXXXXXXXXX"
+openai.api_base = "https://openrouter.ai/api/v1"
+```
 
-chat-system/
-├── server.py              # Server-side logic
-├── client.py              # Terminal-based client
-├── chatbot.py             # (Optional) LLM assistant module
-├── test_simulation.py     # (Optional) Performance test script
-├── messages.log           # Log file (optional)
-├── README.md
+### Terminal Tab 5: Load Test + Latency Plot
+```bash
+python3 testsimulation.py
+python3 latency_plot.py
+open latency_plot.png
+```
 
-Running the System
+---
 
-1. Start the Server
+## 📡 API Notes
 
-python server.py
+This project uses [OpenRouter.ai](https://openrouter.ai) to access GPT-3.5-level models **for free** (no OpenAI billing required).
 
-2. Start Clients (In separate terminals)
+---
 
-python client.py
+## 📄 Report and Submission
 
-3. Use Commands in Client
+- IEEE-format report included (see PDF)
+- Demo video shows 5-tab interaction, chatbot replies, and latency analysis
+- Project ZIP includes all source code and required files
 
-JOIN #room1 – Join or create a room
+---
 
-SWITCH #room2 – Move to another room
-
-LEAVE – Leave current room
-
-/ask What is a distributed system? – (Optional) Ask the LLM bot
-
-exit – Disconnect from chat
-
-Notes
-
-You can run multiple clients from different terminals.
-
-Each chatroom is isolated: clients only see messages from their current room.
-
-Server logs client joins, messages, and disconnections.
-
-LLM support can be added later in chatbot.py and integrated into server.py.
-
-
-Author
-
-Dennis Tran]CECS 327 – Networks and Distributed Computing
+## ✅ Status: COMPLETE — A-LEVEL READY ✅
