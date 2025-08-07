@@ -2,35 +2,27 @@
 import socket
 import threading
 import time
+import openai
+import os
 
-# Extended keyword-based offline bot
-REPLIES = {
-    "hello": "Hi there! 👋",
-    "how are you": "I'm just a bot, but I'm doing well!",
-    "bye": "Goodbye! Have a great day!",
-    "who are you": "I'm your friendly offline chatbot.",
-    "thanks": "You're welcome!",
-    "joke": "Why did the programmer quit his job? Because he didn't get arrays.",
-    "help": "Try asking me about the weather, a joke, or how I am!",
-    "weather": "It's always sunny in the terminal. ☀️",
-    "study tip": "Break your work into small chunks and take regular breaks!",
-    "exam": "Good luck! Remember to breathe and stay focused.",
-    "chatroom": "Chatrooms help separate conversations into isolated spaces.",
-    "project": "Sounds like you're building something awesome!",
-    "python": "Python is a powerful language for distributed systems.",
-    "bot": "Yes, I'm a bot! And proud of it."
-}
-
+# ==== CONFIGURATION ====
 HOST = '127.0.0.1'
 PORT = 12345
 ROOM = 'testroom'
 
-def get_reply(message):
-    message = message.lower()
-    for keyword in REPLIES:
-        if keyword in message:
-            return REPLIES[keyword]
-    return "I'm not sure how to respond to that."
+# ==== OpenRouter Setup ====
+openai.api_key = "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"
+openai.api_base = "https://openrouter.ai/api/v1"
+
+def ask_llm(prompt):
+    try:
+        response = openai.ChatCompletion.create(
+            model="openai/gpt-3.5-turbo",  # You can also try "anthropic/claude-3-haiku"
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"[LLM Error] {e}"
 
 def main():
     bot = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,15 +37,18 @@ def main():
             try:
                 msg = bot.recv(1024).decode().strip()
                 print(f"[ChatBot] Received: {msg}")
-                if any(kw in msg.lower() for kw in REPLIES.keys()):
-                    reply = get_reply(msg)
+
+                if msg:
                     time.sleep(1)
+                    reply = ask_llm(msg)
                     bot.send(reply.encode())
-            except:
+
+            except Exception as e:
+                print(f"[ChatBot Error] {e}")
                 break
 
     except Exception as e:
-        print(f"[ChatBot Error] {e}")
+        print(f"[ChatBot Connection Error] {e}")
     finally:
         bot.close()
 
