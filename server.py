@@ -135,7 +135,7 @@ def handle_client(client_socket, address):
             elif message.startswith("/quit"):
                 break
 
-            # === Regular Messages (Stateless Login Fix) ===
+            # === Regular Messages with Echo ===
             else:
                 sender = logged_in_users.get(client_socket)
 
@@ -166,7 +166,10 @@ def handle_client(client_socket, address):
                 cursor.execute("INSERT INTO messages (sender, room, content, timestamp) VALUES (?, ?, ?, ?)",
                                (sender, current_room, message, timestamp))
                 conn.commit()
-                chatrooms.broadcast(client_socket, f"{sender}: {message}")
+
+                formatted = f"{sender}: {message}"
+                chatrooms.broadcast(client_socket, formatted)
+                client_socket.send(f"{formatted}\n".encode())  # 👈 Echo to sender
 
         except ConnectionResetError:
             break
