@@ -76,6 +76,15 @@ python3 testsimulation.py
 python3 latency_plot.py
 open latency_plot.png
 ```
+## 🌐 Web Frontend (Real-Time Chat)
+
+To run the browser-based chat:
+
+1. Make sure `server.py` is running
+2. Start the frontend:
+   ```bash
+   cd web_frontend
+   python3 websocket_app.py --port=5050
 
 ---
 
