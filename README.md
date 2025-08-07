@@ -81,16 +81,4 @@ open latency_plot.png
 
 ## 📡 API Notes
 
-This project uses [OpenRouter.ai](https://openrouter.ai) to access GPT-3.5-level models **for free** (no OpenAI billing required).
-
----
-
-## 📄 Report and Submission
-
-- IEEE-format report included (see PDF)
-- Demo video shows 5-tab interaction, chatbot replies, and latency analysis
-- Project ZIP includes all source code and required files
-
----
-
-## ✅ Status: COMPLETE — A-LEVEL READY ✅
+This project uses [OpenRouter.ai](https://openrouter.ai) to access GPT-3.5-level models
