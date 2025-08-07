@@ -1,5 +1,5 @@
 
-# Distributed Multi-Chatroom Messaging System (CECS 327 Final Project)
+# Distributed Multi-Chatroom Messaging System
 
 This is a distributed messaging system built in Python using sockets and threading. It supports multiple clients, chatrooms, a chatbot powered by OpenRouter (GPT-3.5), and includes performance analysis with latency visualization.
 
