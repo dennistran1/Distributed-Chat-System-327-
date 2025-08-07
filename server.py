@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS messages (
     timestamp TEXT NOT NULL
 )
 """)
-
 conn.commit()
 
 print(f"[STARTED] Server listening on {HOST}:{PORT}")
@@ -83,7 +82,7 @@ def handle_client(client_socket, address):
                 else:
                     client_socket.send("Usage: /login <username>\n".encode())
 
-            # === Join Room (login required) ===
+            # === Join Room ===
             elif message.startswith("/join"):
                 if client_socket not in logged_in_users:
                     client_socket.send("❌ Please login first with /login <username>\n".encode())
@@ -111,7 +110,7 @@ def handle_client(client_socket, address):
                 else:
                     client_socket.send("No active chatrooms.\n".encode())
 
-            # === Show History (login required) ===
+            # === History ===
             elif message.startswith("/history"):
                 if client_socket not in logged_in_users:
                     client_socket.send("❌ Please login to view chat history.\n".encode())
@@ -136,16 +135,33 @@ def handle_client(client_socket, address):
             elif message.startswith("/quit"):
                 break
 
-            # === Regular Messages (only if logged in & in a room) ===
+            # === Regular Messages (Stateless Login Fix) ===
             else:
-                if client_socket not in logged_in_users:
-                    client_socket.send("❌ Please login before chatting.\n".encode())
-                    continue
+                sender = logged_in_users.get(client_socket)
+
+                if not sender:
+                    if message.startswith("/login "):
+                        parts = message.split()
+                        if len(parts) == 2:
+                            username = parts[1]
+                            cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+                            if cursor.fetchone():
+                                logged_in_users[client_socket] = username
+                                client_socket.send(f"✅ Logged in as '{username}'\n".encode())
+                                sender = username
+                            else:
+                                client_socket.send(f"❌ Username '{username}' not found.\n".encode())
+                        else:
+                            client_socket.send("Usage: /login <username>\n".encode())
+                        continue
+                    else:
+                        client_socket.send("❌ Please login first with /login <username>\n".encode())
+                        continue
+
                 if not current_room:
                     client_socket.send("❌ Join a room to send messages.\n".encode())
                     continue
 
-                sender = logged_in_users[client_socket]
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 cursor.execute("INSERT INTO messages (sender, room, content, timestamp) VALUES (?, ?, ?, ?)",
                                (sender, current_room, message, timestamp))
