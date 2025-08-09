@@ -10,7 +10,7 @@ ROOM = 'testroom'
 USERNAME = 'chatbot'
 
 # ==== OpenRouter Setup ====
-openai.api_key = "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"
+openai.api_key = "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"
 openai.api_base = "https://openrouter.ai/api/v1"
 
 def ask_llm(prompt):
@@ -30,15 +30,11 @@ def main():
         print("[ChatBot] Connected to server.")
         time.sleep(1)
 
-        # Auto register (just in case)
+        # Auto register and login
         bot.sendall(f"/register {USERNAME}\n".encode())
         time.sleep(1)
-
-        # Login
         bot.sendall(f"/login {USERNAME}\n".encode())
         time.sleep(1)
-
-        # Join room
         bot.sendall(f"/join {ROOM}\n".encode())
         print(f"[ChatBot] Logged in and joined room '{ROOM}'.")
 
@@ -47,11 +43,22 @@ def main():
                 msg = bot.recv(1024).decode().strip()
                 print(f"[ChatBot] Received: {msg}")
 
-                # Ignore server errors to avoid bot loops
-                if msg.startswith("❌") or msg.startswith("⚠️") or not msg:
+                # Ignore errors, empty messages, or own messages
+                if not msg or msg.startswith("❌") or msg.startswith("⚠️"):
+                    continue
+                if msg.startswith(f"{USERNAME}:"):
                     continue
 
-                reply = ask_llm(msg)
+                # Only respond to messages starting with /ask
+                if "/ask" not in msg.lower():
+                    continue
+
+                # Extract question
+                question = msg.lower().split("/ask", 1)[1].strip()
+                if not question:
+                    continue
+
+                reply = ask_llm(question)
                 time.sleep(1)
                 bot.sendall(reply.encode())
 
@@ -66,3 +73,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
