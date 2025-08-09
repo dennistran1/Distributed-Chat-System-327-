@@ -17,6 +17,7 @@ This is a distributed messaging system built in Python using sockets and threadi
 - 📊 **Performance testing** with `testsimulation.py` simulating client load
 - 📈 **Latency plot** generated with `latency_plot.py` (outputs `latency_plot.png`)
 - 🧪 **Latency data file**: `latency_data.txt`
+- 📦 **SQLite database** stores user accounts and chat messages
 
 ---
 
@@ -25,15 +26,17 @@ This is a distributed messaging system built in Python using sockets and threadi
 ```
 DistributedChat327/
 │
-├── server.py              # Multi-threaded server
-├── client.py              # User-facing chat client
-├── chatroom.py            # Chatroom management logic
-├── chatbot.py             # Chatbot using OpenRouter API
-├── testsimulation.py      # Simulates multiple clients and records latency
-├── latency_plot.py        # Plots latency data into latency_plot.png
-├── latency_data.txt       # Raw latency results from simulation
-├── latency_plot.png       # Visualized latency graph
-└── README.md              # You're here
+├── server.py # Multi-threaded server
+├── client.py # User-facing chat client
+├── chatroom.py # Chatroom management logic
+├── chatbot.py # Chatbot using OpenRouter API
+├── testsimulation.py # Simulates multiple clients and records latency
+├── latency_plot.py # Plots latency data into latency_plot.png
+├── latency_data.txt # Raw latency results from simulation
+├── latency_plot.png # Visualized latency graph
+├── chat.db # SQLite database with user/message logs
+├── web_frontend/ # WebSocket frontend with Flask
+└── README.md # You're here
 ```
 
 ---
@@ -85,6 +88,35 @@ To run the browser-based chat:
    ```bash
    cd web_frontend
    python3 websocket_app.py --port=5050
+
+📦 SQLite Database
+The system uses chat.db to persist:
+
+Registered users
+
+Chat messages by room
+
+1. How to view your data:
+bash
+Copy
+Edit
+
+sqlite3 chat.db
+
+Then inside the SQLite prompt:
+
+sql
+Copy
+Edit
+.tables
+SELECT * FROM users;
+SELECT * FROM messages ORDER BY id DESC LIMIT 10;
+To exit SQLite:
+
+sql
+Copy
+Edit
+.exit
 
 ---
 
