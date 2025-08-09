@@ -89,21 +89,42 @@ To run the browser-based chat:
    cd web_frontend
    python3 websocket_app.py --port=5050
 
-📦 SQLite Database
-The system uses chat.db to persist:
+## 📦 Database (SQLite)
+The system uses a lightweight SQLite database (chat.db) to persist:
 
-Registered users
+✅ Registered user accounts
 
-Chat messages by room
+💬 Message history by chatroom
 
-1. How to view your data:
+📅 Timestamps for each message
+
+📂 Tables
+users
+
+id (INT, Primary Key)
+
+username (TEXT, Unique)
+
+messages
+
+id (INT, Primary Key)
+
+sender (TEXT)
+
+room (TEXT)
+
+content (TEXT)
+
+timestamp (TEXT)
+
+🧪 How to View Your Data
+1. Run this in Terminal from your project folder:
+
 bash
 Copy
 Edit
-
 sqlite3 chat.db
-
-Then inside the SQLite prompt:
+Inside the SQLite prompt:
 
 sql
 Copy
@@ -111,11 +132,6 @@ Edit
 .tables
 SELECT * FROM users;
 SELECT * FROM messages ORDER BY id DESC LIMIT 10;
-To exit SQLite:
-
-sql
-Copy
-Edit
 .exit
 
 ---
